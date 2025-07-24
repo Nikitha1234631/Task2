@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Intermediate HTML, CSS, JavaScript Project</title>
+<style>
+  /* Reset some default styles */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 20px;
+    background: #f8fafb;
+    color: #1a202c;
+  }
+  h1 {
+    text-align: center;
+    color: #0a546a;
+  }
+  
+  /* Layout: Flexbox + Grid */
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+  .form-section, .gallery-section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+    flex: 1 1 350px;
+    max-width: 480px;
+  }
+
+  /* Contact form styles */
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  label {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    padding: 10px;
+    border: 1px solid #b2becd;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+  input[type="submit"] {
+    background-color: #0a546a;
+    color: white;
+    font-weight: 600;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  input[type="submit"]:hover {
+    background-color: #064351;
+  }
+  .error {
+    color: #e74c3c;
+    font-size: 0.9rem;
+  }
+  .success {
+    color: #27ae60;
+    font-size: 1rem;
+    margin-top: 12px;
+  }
+
+  /* Gallery / To-do list styles */
+  .todo-input {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+  }
+  .todo-input input[type="text"] {
+    flex-grow: 1;
+  }
+  .todo-list {
+    list-style: none;
+    padding: 0;
+  }
+  .todo-list li {
+    background: #e3f2fd;
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .todo-list li button {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .todo-list li button:hover {
+    background: #c0392b;
+  }
+
+  /* Responsive Grid inside gallery section for images */
+  .image-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(100px,1fr));
+    gap: 10px;
+  }
+  .image-gallery img {
+    width: 100%;
+    border-radius: 6px;
+    object-fit: cover;
+  }
+
+</style>
+</head>
+<body>
+
+<h1>Intermediate HTML, CSS, and JavaScript</h1>
+
+<div class="container">
+  <!-- Contact Form Section -->
+  <section class="form-section">
+    <h2>Contact Form</h2>
+    <form id="contactForm" novalidate>
+      <label for="name">Name *</label>
+      <input type="text" id="name" name="name" required placeholder="Your name" />
+
+      <label for="email">Email *</label>
+      <input type="email" id="email" name="email" required placeholder="example@example.com" />
+
+      <label for="password">Password *</label>
+      <input type="password" id="password" name="password" required placeholder="Enter your password" />
+
+      <input type="submit" value="Submit" />
+      <p class="error" id="formError"></p>
+      <p class="success" id="formSuccess"></p>
+    </form>
+  </section>
+
+  <!-- To-Do List or Image Gallery Section -->
+  <section class="gallery-section">
+    <h2>Dynamic To-Do List</h2>
+
+    <div class="todo-input">
+      <input type="text" id="taskInput" placeholder="Add new task or image URL" />
+      <button id="addTaskBtn">Add Task</button>
+      <button id="toggleModeBtn">Switch to Image Gallery</button>
+    </div>
+
+    <ul class="todo-list" id="todoList"></ul>
+
+    <div class="image-gallery" id="imageGallery" style="display:none;"></div>
+  </section>
+</div>
+
+<script>
+  // Contact form validation and submission
+  const form = document.getElementById('contactForm');
+  const formError = document.getElementById('formError');
+  const formSuccess = document.getElementById('formSuccess');
+
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();
+    formError.textContent = '';
+    formSuccess.textContent = '';
+
+    const name = form.name.value.trim();
+    const email = form.email.value.trim();
+    const password = form.password.value.trim();
+
+    // Simple email regex for validation
+    const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+    if (!name) {
+      formError.textContent = 'Name is required.';
+      return;
+    }
+    if (!email || !emailRegex.test(email)) {
+      formError.textContent = 'Valid email is required.';
+      return;
+    }
+    if (!password || password.length < 6) {
+      formError.textContent = 'Password must be at least 6 characters.';
+      return;
+    }
+
+    // If all validation passes
+    formSuccess.textContent = 'Form submitted successfully!';
+    form.reset();
+  });
+
+  // To-do list and image gallery logic
+  const taskInput = document.getElementById('taskInput');
+  const addTaskBtn = document.getElementById('addTaskBtn');
+  const todoList = document.getElementById('todoList');
+  const imageGallery = document.getElementById('imageGallery');
+  const toggleModeBtn = document.getElementById('toggleModeBtn');
+
+  let mode = 'todo'; // or 'gallery'
+
+  // Add task or image URL
+  addTaskBtn.addEventListener('click', () => {
+    const value = taskInput.value.trim();
+    if (!value) return;
+
+    if (mode === 'todo') {
+      addTodoItem(value);
+    } else {
+      addImage(value);
+    }
+    taskInput.value = '';
+  });
+
+  // Toggle mode between todo and gallery
+  toggleModeBtn.addEventListener('click', () => {
+    if (mode === 'todo') {
+      mode = 'gallery';
+      todoList.style.display = 'none';
+      imageGallery.style.display = 'grid';
+      toggleModeBtn.textContent = 'Switch to To-Do List';
+      addTaskBtn.textContent = 'Add Image';
+      taskInput.placeholder = 'Add new image URL';
+      todoList.innerHTML = ''; // clear todo
+    } else {
+      mode = 'todo';
+      todoList.style.display = 'block';
+      imageGallery.style.display = 'none';
+      toggleModeBtn.textContent = 'Switch to Image Gallery';
+      addTaskBtn.textContent = 'Add Task';
+      taskInput.placeholder = 'Add new task or image URL';
+      imageGallery.innerHTML = ''; // clear images
+    }
+  });
+
+  // Function to add todo item
+  function addTodoItem(text) {
+    const li = document.createElement('li');
+    li.textContent = text;
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = 'Remove';
+    removeBtn.onclick = () => li.remove();
+    li.appendChild(removeBtn);
+    todoList.appendChild(li);
+  }
+
+  // Function to add image
+  function addImage(url) {
+    if (!isValidUrl(url)) {
+      alert('Please enter a valid image URL.');
+      return;
+    }
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = 'User added image';
+
+    // Add click event to remove image
+    img.style.cursor = 'pointer';
+    img.title = "Click to remove";
+    img.onclick = () => imageGallery.removeChild(img);
+
+    imageGallery.appendChild(img);
+  }
+
+  // URL validation helper
+  function isValidUrl(string) {
+    try {
+      new URL(string);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+</script>
+
+</body>
+</html>
